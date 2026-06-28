@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { WorkspaceRole } from '../../workspaces/types/workspace-role.enum';
 import { Workspace as ActualWorkspace } from '../../workspaces/entities/workspace.entity';
@@ -21,9 +22,12 @@ export class Invitation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  // Indexed because we look up invitations by email + workspaceId when sending duplicates
+  @Index()
   @Column()
   email: string;
 
+  @Index()
   @Column()
   workspaceId: string;
 
@@ -34,15 +38,18 @@ export class Invitation {
   })
   role: WorkspaceRole;
 
+  // unique index already created by @Column({ unique: true }) — token is looked up on every accept/verify
   @Column({ unique: true })
   token: string;
 
   @Column({ type: 'timestamp' })
   expiresAt: Date;
 
+  @Index()
   @Column()
   invitedById: string;
 
+  @Index()
   @Column({
     type: 'enum',
     enum: InvitationStatus,

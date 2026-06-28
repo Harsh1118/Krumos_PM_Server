@@ -5,6 +5,7 @@ import {
   ManyToOne,
   Unique,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Workspace } from './workspace.entity';
@@ -18,9 +19,11 @@ export class WorkspaceMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column()
   userId: string;
 
+  @Index()
   @Column()
   workspaceId: string;
 

@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { InvitationsService } from '../services/invitations.service';
 import { DefaultEmailMaskingStrategy } from '../../../core/strategies/email/email-masking.strategy';
 import { JwtAuthGuard } from '../../../core/guards/jwt-auth.guard';
@@ -34,6 +35,7 @@ export class InvitationsController {
   ) {}
 
   // 1. Verify invitation token (Public endpoint)
+  @Throttle({ default: { limit: 15, ttl: 60000 } })
   @Get('invitations/verify/:token')
   async verify(@Param('token') token: string) {
     const invite = await this.invitationsService.verify(token);
@@ -42,6 +44,7 @@ export class InvitationsController {
   }
 
   // 2. Accept invitation (Requires user authentication)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('invitations/accept')
   @UseGuards(JwtAuthGuard)
   async accept(@CurrentUser() user: User, @Body() acceptInvitationDto: AcceptInvitationDto) {
@@ -49,6 +52,7 @@ export class InvitationsController {
   }
 
   // 3. Create invitation (ADMIN only)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('workspaces/:slug/invitations')
   @UseGuards(JwtAuthGuard, WorkspaceGuard, RolesGuard)
   @Roles(WorkspaceRole.ADMIN)

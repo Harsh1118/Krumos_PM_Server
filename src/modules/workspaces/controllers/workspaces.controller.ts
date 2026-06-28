@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { WorkspacesService } from '../services/workspaces.service';
 import { JwtAuthGuard } from '../../../core/guards/jwt-auth.guard';
 import { WorkspaceGuard } from '../../../core/guards/workspace.guard';
@@ -27,6 +28,7 @@ import { DeleteWorkspaceDto } from '../data/requests/delete-workspace.dto';
 export class WorkspacesController {
   constructor(private readonly workspacesService: WorkspacesService) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post()
   async create(
     @CurrentUser() user: User,

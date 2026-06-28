@@ -92,28 +92,49 @@ export class DashboardService {
     const startOfWeek = new Date(now.setDate(diff));
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const teamWorkload = await Promise.all(
-      members.map(async (m) => {
-        // Let's use query builder to avoid SQL structure issues
-        const openCount = await this.taskRepository
-          .createQueryBuilder('task')
-          .where('task.workspaceId = :workspaceId', { workspaceId })
-          .andWhere('task.assigneeId = :assigneeId', { assigneeId: m.userId })
-          .andWhere('task.status != :done', { done: TaskStatus.DONE })
-          .getCount();
+    // Fetch all open tasks count for workspace grouped by assigneeId in a single bulk query
+    const openCountsRaw = await this.taskRepository
+      .createQueryBuilder('task')
+      .select('task.assigneeId', 'assigneeId')
+      .addSelect('COUNT(task.id)', 'count')
+      .where('task.workspaceId = :workspaceId', { workspaceId })
+      .andWhere('task.status != :done', { done: TaskStatus.DONE })
+      .andWhere('task.assigneeId IS NOT NULL')
+      .groupBy('task.assigneeId')
+      .getRawMany();
 
-        // Completed tasks this week count
-        const completedCount = await this.taskRepository
-          .createQueryBuilder('task')
-          .where('task.workspaceId = :workspaceId', { workspaceId })
-          .andWhere('task.assigneeId = :assigneeId', { assigneeId: m.userId })
-          .andWhere('task.status = :done', { done: TaskStatus.DONE })
-          .andWhere('task.updatedAt >= :startOfWeek', { startOfWeek })
-          .getCount();
+    // Fetch completed tasks count this week grouped by assigneeId in a single bulk query
+    const completedCountsRaw = await this.taskRepository
+      .createQueryBuilder('task')
+      .select('task.assigneeId', 'assigneeId')
+      .addSelect('COUNT(task.id)', 'count')
+      .where('task.workspaceId = :workspaceId', { workspaceId })
+      .andWhere('task.status = :done', { done: TaskStatus.DONE })
+      .andWhere('task.updatedAt >= :startOfWeek', { startOfWeek })
+      .andWhere('task.assigneeId IS NOT NULL')
+      .groupBy('task.assigneeId')
+      .getRawMany();
 
-        return mapMemberToTeamWorkload(m, openCount, completedCount);
-      }),
-    );
+    // Convert raw query results to quick-lookup Maps
+    const openCountsMap = new Map<string, number>();
+    openCountsRaw.forEach((item) => {
+      if (item.assigneeId) {
+        openCountsMap.set(item.assigneeId, parseInt(item.count, 10));
+      }
+    });
+
+    const completedCountsMap = new Map<string, number>();
+    completedCountsRaw.forEach((item) => {
+      if (item.assigneeId) {
+        completedCountsMap.set(item.assigneeId, parseInt(item.count, 10));
+      }
+    });
+
+    const teamWorkload = members.map((m) => {
+      const openCount = openCountsMap.get(m.userId) || 0;
+      const completedCount = completedCountsMap.get(m.userId) || 0;
+      return mapMemberToTeamWorkload(m, openCount, completedCount);
+    });
 
     return {
       tasksByProject,

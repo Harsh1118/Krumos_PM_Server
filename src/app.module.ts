@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -16,6 +16,7 @@ import { CommentsModule } from './modules/comments/comments.module';
 import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { HttpLoggerMiddleware } from './core/middleware/http-logger.middleware';
 
 @Module({
   imports: [
@@ -41,16 +42,27 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     TypeOrmModule.forRootAsync({
       imports: [CoreModule],
       useFactory: (envConfig: EnvConfig) => {
-        const { url } = envConfig.dbConfig;
+        const { url, sslRejectUnauthorized, sslCa } = envConfig.dbConfig;
         const { isProduction } = envConfig.appConfig;
         const useSSL =
           url && !url.includes('localhost') && !url.includes('127.0.0.1');
+
+        let sslConfig: any = false;
+        if (useSSL) {
+          sslConfig = {
+            rejectUnauthorized: sslRejectUnauthorized,
+          };
+          if (sslCa) {
+            sslConfig.ca = sslCa;
+          }
+        }
+
         return {
           type: 'postgres',
           url,
           autoLoadEntities: true,
           synchronize: !isProduction, // Auto schema sync only in dev
-          ssl: useSSL ? { rejectUnauthorized: false } : false,
+          ssl: sslConfig,
           migrations: [__dirname + '/core/config/database/migrations/**/*{.ts,.js}'],
           migrationsRun: isProduction, // Auto-run migrations in production
         };
@@ -78,4 +90,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(HttpLoggerMiddleware).forRoutes('*');
+  }
+}

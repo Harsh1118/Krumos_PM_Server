@@ -4,6 +4,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { Workspace } from '../entities/workspace.entity';
 import {
   WorkspaceMember,
@@ -18,6 +19,7 @@ export class WorkspacesService {
   constructor(
     private readonly workspaceRepository: WorkspacesRepository,
     private readonly workspaceMemberRepository: WorkspaceMembersRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(userId: string, name: string, slug: string): Promise<Workspace> {
@@ -39,22 +41,27 @@ export class WorkspacesService {
       );
     }
 
-    const workspace = this.workspaceRepository.create({
-      name: name.trim(),
-      slug: cleanSlug,
-    });
-    const savedWorkspace = await this.workspaceRepository.save(workspace);
+    // Wrap both writes in a database transaction to ensure atomicity.
+    // If saving the admin membership fails, the workspace creation rolls back.
+    return this.dataSource.transaction(async (manager) => {
+      const workspace = manager.create(Workspace, {
+        name: name.trim(),
+        slug: cleanSlug,
+      });
+      const savedWorkspace = await manager.save(Workspace, workspace);
 
-    // Create owner as ADMIN
-    const member = this.workspaceMemberRepository.create({
-      userId,
-      workspaceId: savedWorkspace.id,
-      role: WorkspaceRole.ADMIN,
-    });
-    await this.workspaceMemberRepository.save(member);
+      // Create owner as ADMIN
+      const member = manager.create(WorkspaceMember, {
+        userId,
+        workspaceId: savedWorkspace.id,
+        role: WorkspaceRole.ADMIN,
+      });
+      await manager.save(WorkspaceMember, member);
 
-    return savedWorkspace;
+      return savedWorkspace;
+    });
   }
+
 
   async findAllForUser(userId: string) {
     const memberships = await this.workspaceMemberRepository.find({

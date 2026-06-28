@@ -23,11 +23,16 @@ export class WorkspaceGuard implements CanActivate {
       throw new ForbiddenException('User is not authenticated');
     }
 
-    // Resolve workspace slug from header first, then route params
-    let slug = request.headers['x-workspace-slug'] as string;
-    if (!slug && request.params.slug) {
-      slug = request.params.slug;
+    // Route params take priority over the header.
+    // The header is a client-side convenience for the active workspace (stored in localStorage).
+    // However, when the URL contains an explicit :slug param (e.g. /api/workspaces/workspace-b/…),
+    // that must always win — otherwise navigating directly to a workspace URL would silently
+    // resolve to whichever workspace the client last stored in localStorage.
+    let slug = request.params.slug as string | undefined;
+    if (!slug) {
+      slug = request.headers['x-workspace-slug'] as string;
     }
+
 
     if (!slug) {
       throw new ForbiddenException('Workspace context is missing');

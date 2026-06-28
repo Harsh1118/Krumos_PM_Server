@@ -25,17 +25,7 @@ export class AdminTaskUpdateStrategy implements TaskUpdateStrategy {
 @Injectable()
 export class ManagerTaskUpdateStrategy implements TaskUpdateStrategy {
   validate(task: Task, user: User, data: any): void {
-    const isChangingPriority = data.priority !== undefined && data.priority !== task.priority;
-    const isChangingAssignee = data.assigneeId !== undefined && data.assigneeId !== task.assigneeId;
-    const oldDateStr = task.dueDate ? task.dueDate.toISOString() : null;
-    const newDateStr = data.dueDate !== undefined ? (data.dueDate ? new Date(data.dueDate).toISOString() : null) : oldDateStr;
-    const isChangingDueDate = data.dueDate !== undefined && oldDateStr !== newDateStr;
-
-    if (isChangingPriority || isChangingAssignee || isChangingDueDate) {
-      throw new ForbiddenException(
-        'Only admins can change task priority, assignee, and due date',
-      );
-    }
+    // MANAGERs can modify all task fields; no restrictions.
   }
 }
 

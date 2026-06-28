@@ -9,6 +9,7 @@ import {
   OneToMany,
   Unique,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Workspace } from '../../workspaces/entities/workspace.entity';
 import { User } from '../../users/entities/user.entity';
@@ -26,12 +27,14 @@ export class Project {
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
+  @Index()
   @Column()
   workspaceId: string;
 
   @Column({ default: false })
   isArchived: boolean;
 
+  @Index()
   @Column()
   createdById: string;
 

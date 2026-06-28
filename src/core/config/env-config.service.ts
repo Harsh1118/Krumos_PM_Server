@@ -19,6 +19,8 @@ const envSchema = z.object({
   BREVO_FROM_EMAIL: z.string().email(),
   BREVO_FROM_NAME: z.string().default('Krumos'),
   REDIS_URL: z.string().default('redis://localhost:6379'),
+  DB_SSL_REJECT_UNAUTHORIZED: z.string().default('true'),
+  DB_SSL_CA: z.string().optional(),
 });
 
 type EnvType = z.infer<typeof envSchema>;
@@ -53,9 +55,11 @@ export class EnvConfig {
   }
 
   get dbConfig() {
-    const { DATABASE_URL } = this.envConfig;
+    const { DATABASE_URL, DB_SSL_REJECT_UNAUTHORIZED, DB_SSL_CA } = this.envConfig;
     return {
       url: DATABASE_URL,
+      sslRejectUnauthorized: DB_SSL_REJECT_UNAUTHORIZED === 'true',
+      sslCa: DB_SSL_CA,
     };
   }
 

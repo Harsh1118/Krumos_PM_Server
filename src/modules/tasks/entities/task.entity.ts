@@ -8,6 +8,7 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Project } from '../../projects/entities/project.entity';
 import { Workspace } from '../../workspaces/entities/workspace.entity';
@@ -34,9 +35,11 @@ export class Task {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column()
   projectId: string;
 
+  @Index()
   @Column()
   workspaceId: string;
 
@@ -46,6 +49,7 @@ export class Task {
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
+  @Index()
   @Column({
     type: 'enum',
     enum: TaskStatus,
@@ -53,6 +57,7 @@ export class Task {
   })
   status: TaskStatus;
 
+  @Index()
   @Column({
     type: 'enum',
     enum: TaskPriority,
@@ -60,9 +65,11 @@ export class Task {
   })
   priority: TaskPriority;
 
+  @Index()
   @Column({ type: 'varchar', nullable: true })
   assigneeId: string | null;
 
+  @Index()
   @Column()
   reporterId: string;
 

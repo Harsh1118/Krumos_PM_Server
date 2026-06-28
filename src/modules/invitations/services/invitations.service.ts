@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { EnvConfig } from '../../../core/config/env-config.service';
 import * as crypto from 'crypto';
+import { DataSource } from 'typeorm';
 import { Invitation, InvitationStatus } from '../entities/invitation.entity';
 import { Workspace } from '../../workspaces/entities/workspace.entity';
 import {
@@ -30,7 +31,9 @@ export class InvitationsService {
     private readonly emailService: EmailService,
     private readonly envConfig: EnvConfig,
     private readonly notificationsService: NotificationsService,
+    private readonly dataSource: DataSource,
   ) {}
+
 
   async invite(
     workspace: Workspace,
@@ -159,25 +162,29 @@ export class InvitationsService {
       );
     }
 
-    // Mark status as ACCEPTED
-    invite.status = InvitationStatus.ACCEPTED;
-    await this.invitationRepository.save(invite);
+    // Both state modifications must execute atomically.
+    // Wrap database operations in a transaction block.
+    return this.dataSource.transaction(async (manager) => {
+      // Mark status as ACCEPTED
+      invite.status = InvitationStatus.ACCEPTED;
+      await manager.save(Invitation, invite);
 
-    // Add user as workspace member
-    let member = await this.workspaceMemberRepository.findOne({
-      where: { userId: user.id, workspaceId: invite.workspaceId },
-    });
-
-    if (!member) {
-      member = this.workspaceMemberRepository.create({
-        userId: user.id,
-        workspaceId: invite.workspaceId,
-        role: invite.role,
+      // Add user as workspace member
+      let member = await manager.findOne(WorkspaceMember, {
+        where: { userId: user.id, workspaceId: invite.workspaceId },
       });
-      await this.workspaceMemberRepository.save(member);
-    }
 
-    return invite.workspace;
+      if (!member) {
+        member = manager.create(WorkspaceMember, {
+          userId: user.id,
+          workspaceId: invite.workspaceId,
+          role: invite.role,
+        });
+        await manager.save(WorkspaceMember, member);
+      }
+
+      return invite.workspace;
+    });
   }
 
   async getMembers(workspaceId: string) {
