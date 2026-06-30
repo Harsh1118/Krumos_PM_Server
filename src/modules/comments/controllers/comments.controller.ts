@@ -37,7 +37,12 @@ export class CommentsController {
     @CurrentUser() user: User,
     @Body() createCommentDto: CreateCommentDto,
   ) {
-    const comment = await this.commentsService.create(workspace.id, taskId, user, createCommentDto.content);
+    const comment = await this.commentsService.create(
+      workspace.id,
+      taskId,
+      user,
+      createCommentDto.content,
+    );
     return mapCommentToResponse(comment);
   }
 
@@ -46,7 +51,10 @@ export class CommentsController {
     @CurrentWorkspace() workspace: Workspace,
     @Param('taskId') taskId: string,
   ) {
-    const comments = await this.commentsService.findAllForTask(workspace.id, taskId);
+    const comments = await this.commentsService.findAllForTask(
+      workspace.id,
+      taskId,
+    );
     return comments.map(mapCommentToResponse);
   }
 
@@ -57,7 +65,12 @@ export class CommentsController {
     @CurrentUser() user: User,
     @Body() updateCommentDto: UpdateCommentDto,
   ) {
-    const comment = await this.commentsService.update(workspace.id, id, user.id, updateCommentDto.content);
+    const comment = await this.commentsService.update(
+      workspace.id,
+      id,
+      user.id,
+      updateCommentDto.content,
+    );
     return mapCommentToResponse(comment);
   }
 

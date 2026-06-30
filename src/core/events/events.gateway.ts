@@ -16,7 +16,9 @@ import { WorkspaceMembersRepository } from '../../modules/workspaces/repositorie
 @WebSocketGateway({
   cors: {
     origin: process.env.FRONTEND_URL
-      ? (process.env.FRONTEND_URL.includes(',') ? process.env.FRONTEND_URL.split(',') : process.env.FRONTEND_URL)
+      ? process.env.FRONTEND_URL.includes(',')
+        ? process.env.FRONTEND_URL.split(',')
+        : process.env.FRONTEND_URL
       : 'http://localhost:5173',
     credentials: true,
   },
@@ -46,7 +48,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.userId = payload.sub;
 
       // Join private user room for targeted notifications
-      client.join(`user_${payload.sub}`);
+      await client.join(`user_${payload.sub}`);
       this.logger.log(`Socket Client Connected: User ${payload.sub}`);
     } catch {
       this.logger.warn('Socket connection unauthorized, disconnecting...');
@@ -75,9 +77,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Verify the workspace exists
-    const workspace = await this.workspacesRepository.findOne({ where: { slug } });
+    const workspace = await this.workspacesRepository.findOne({
+      where: { slug },
+    });
     if (!workspace) {
-      this.logger.warn(`User ${userId} attempted to join non-existent workspace: ${slug}`);
+      this.logger.warn(
+        `User ${userId} attempted to join non-existent workspace: ${slug}`,
+      );
       return { error: 'Workspace not found' };
     }
 
@@ -88,27 +94,50 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     if (!membership) {
-      this.logger.warn(`Unauthorized workspace join attempt: User ${userId} → workspace "${slug}"`);
+      this.logger.warn(
+        `Unauthorized workspace join attempt: User ${userId} → workspace "${slug}"`,
+      );
       return { error: 'You are not a member of this workspace' };
     }
 
     // Leave all previously joined workspace rooms before joining the new one
-    for (const room of client.rooms) {
+    const rooms = Array.from(client.rooms);
+    for (const room of rooms) {
       if (room.startsWith('workspace_')) {
-        client.leave(room);
+        await client.leave(room);
       }
     }
 
-    client.join(`workspace_${slug}`);
+    await client.join(`workspace_${slug}`);
     this.logger.log(`User ${userId} joined workspace room: workspace_${slug}`);
     return { status: 'joined', room: `workspace_${slug}` };
   }
 
-  broadcastToWorkspace(slug: string, eventName: string, data: object | string | number | boolean | null | undefined) {
-    this.server.to(`workspace_${slug}`).emit(eventName, data);
+  broadcastToWorkspace(
+    slug: string,
+    eventName: string,
+    data: object | string | number | boolean | null | undefined,
+  ) {
+    if (this.server) {
+      this.server.to(`workspace_${slug}`).emit(eventName, data);
+    } else {
+      this.logger.warn(
+        `WebSocket server not initialized. Suppressed broadcast of event "${eventName}" to workspace "${slug}"`,
+      );
+    }
   }
 
-  sendToUser(userId: string, eventName: string, data: object | string | number | boolean | null | undefined) {
-    this.server.to(`user_${userId}`).emit(eventName, data);
+  sendToUser(
+    userId: string,
+    eventName: string,
+    data: object | string | number | boolean | null | undefined,
+  ) {
+    if (this.server) {
+      this.server.to(`user_${userId}`).emit(eventName, data);
+    } else {
+      this.logger.warn(
+        `WebSocket server not initialized. Suppressed event "${eventName}" to user "${userId}"`,
+      );
+    }
   }
 }

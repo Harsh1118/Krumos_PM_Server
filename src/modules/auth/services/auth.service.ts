@@ -59,10 +59,7 @@ export class AuthService {
   async refreshTokens(
     refreshToken: string,
   ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
-    const hash = crypto
-      .createHash('sha256')
-      .update(refreshToken)
-      .digest('hex');
+    const hash = crypto.createHash('sha256').update(refreshToken).digest('hex');
 
     const user = await this.userRepository.findOne({
       where: { refreshTokenHash: hash },

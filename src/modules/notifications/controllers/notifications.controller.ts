@@ -18,13 +18,19 @@ export class NotificationsController {
     @CurrentUser() user: User,
     @CurrentWorkspace() workspace: Workspace,
   ) {
-    const notifications = await this.notificationsService.findAllForUser(user.id, workspace.id);
+    const notifications = await this.notificationsService.findAllForUser(
+      user.id,
+      workspace.id,
+    );
     return notifications.map(mapNotificationToResponse);
   }
 
   @Patch(':id/read')
   async read(@CurrentUser() user: User, @Param('id') id: string) {
-    const notification = await this.notificationsService.markAsRead(id, user.id);
+    const notification = await this.notificationsService.markAsRead(
+      id,
+      user.id,
+    );
     return mapNotificationToResponse(notification);
   }
 

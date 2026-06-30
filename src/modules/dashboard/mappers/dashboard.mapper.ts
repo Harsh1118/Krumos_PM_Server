@@ -1,6 +1,12 @@
 import { TaskStatus } from '../../tasks/entities/task.entity';
-import { TaskResponseDto, mapTaskToResponse } from '../../tasks/mappers/task.mapper';
-import { ActivityLogResponseDto, mapActivityLogToResponse } from '../../activity-logs/mappers/activity-log.mapper';
+import {
+  TaskResponseDto,
+  mapTaskToResponse,
+} from '../../tasks/mappers/task.mapper';
+import {
+  ActivityLogResponseDto,
+  mapActivityLogToResponse,
+} from '../../activity-logs/mappers/activity-log.mapper';
 import { Task } from '../../tasks/entities/task.entity';
 import { ActivityLog } from '../../activity-logs/entities/activity-log.entity';
 import { Project } from '../../projects/entities/project.entity';
@@ -46,7 +52,9 @@ export const mapDashboardSummary = (
   recentActivity: recentActivity.map(mapActivityLogToResponse),
 });
 
-export const mapProjectToTasksByProject = (project: Project): TasksByProjectDto => {
+export const mapProjectToTasksByProject = (
+  project: Project,
+): TasksByProjectDto => {
   const counts = {
     [TaskStatus.TODO]: 0,
     [TaskStatus.IN_PROGRESS]: 0,

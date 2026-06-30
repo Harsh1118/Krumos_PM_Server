@@ -10,4 +10,3 @@ import { WorkspacesModule } from '../../modules/workspaces/workspaces.module';
   exports: [EventsGateway],
 })
 export class EventsModule {}
-

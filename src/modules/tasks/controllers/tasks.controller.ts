@@ -24,7 +24,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { Workspace } from '../../workspaces/entities/workspace.entity';
 import { WorkspaceRole } from '../../workspaces/entities/workspace-member.entity';
-import { TaskStatus, TaskPriority } from '../entities/task.entity';
+import { TaskPriority } from '../entities/task.entity';
 import { CreateTaskDto } from '../data/requests/create-task.dto';
 import { UpdateTaskDto } from '../data/requests/update-task.dto';
 import { mapTaskToResponse } from '../mappers/task.mapper';

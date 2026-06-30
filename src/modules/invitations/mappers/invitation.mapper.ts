@@ -23,7 +23,9 @@ export interface InvitationVerifyResponseDto {
   invitedBy: string;
 }
 
-export const mapInvitationToResponse = (invitation: Invitation): InvitationResponseDto => ({
+export const mapInvitationToResponse = (
+  invitation: Invitation,
+): InvitationResponseDto => ({
   id: invitation.id,
   email: invitation.email,
   workspaceId: invitation.workspaceId,
@@ -33,11 +35,13 @@ export const mapInvitationToResponse = (invitation: Invitation): InvitationRespo
   invitedById: invitation.invitedById,
   status: invitation.status,
   createdAt: invitation.createdAt,
-  invitedBy: invitation.invitedBy ? {
-    id: invitation.invitedBy.id,
-    name: invitation.invitedBy.name,
-    avatarUrl: invitation.invitedBy.avatarUrl,
-  } : undefined,
+  invitedBy: invitation.invitedBy
+    ? {
+        id: invitation.invitedBy.id,
+        name: invitation.invitedBy.name,
+        avatarUrl: invitation.invitedBy.avatarUrl,
+      }
+    : undefined,
 });
 
 export const mapInvitationToVerifyResponse = (

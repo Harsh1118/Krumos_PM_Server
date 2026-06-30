@@ -11,7 +11,9 @@ export interface NotificationResponseDto {
   createdAt: Date;
 }
 
-export const mapNotificationToResponse = (notification: Notification): NotificationResponseDto => ({
+export const mapNotificationToResponse = (
+  notification: Notification,
+): NotificationResponseDto => ({
   id: notification.id,
   userId: notification.userId,
   workspaceId: notification.workspaceId,

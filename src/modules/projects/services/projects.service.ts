@@ -3,7 +3,9 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { Project } from '../entities/project.entity';
+import { Task } from '../../tasks/entities/task.entity';
 import { mapProjectToWithStats } from '../mappers/project.mapper';
 import { ProjectsRepository } from '../repositories/projects.repository';
 
@@ -11,6 +13,7 @@ import { ProjectsRepository } from '../repositories/projects.repository';
 export class ProjectsService {
   constructor(
     private readonly projectRepository: ProjectsRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(
@@ -98,6 +101,13 @@ export class ProjectsService {
 
   async delete(workspaceId: string, id: string): Promise<void> {
     const project = await this.findOne(workspaceId, id);
-    await this.projectRepository.softRemove(project);
+
+    await this.dataSource.transaction(async (manager) => {
+      // 1. Soft delete all tasks belonging to this project
+      await manager.softDelete(Task, { projectId: id, workspaceId });
+
+      // 2. Soft delete the project itself
+      await manager.softRemove(Project, project);
+    });
   }
 }

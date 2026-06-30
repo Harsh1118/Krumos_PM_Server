@@ -17,26 +17,33 @@ import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { HttpLoggerMiddleware } from './core/middleware/http-logger.middleware';
+import { TenantContextMiddleware } from './core/context/tenant-context.middleware';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CleanupModule } from './modules/cleanup/cleanup.module';
 
 @Module({
   imports: [
     // Global Configurations and Infrastructure
     CoreModule,
+    ScheduleModule.forRoot(),
+    CleanupModule,
 
     // Redis queue configuration
     BullModule.forRootAsync({
       imports: [CoreModule],
-      useFactory: async (envConfig: EnvConfig) => ({
+      useFactory: (envConfig: EnvConfig) => ({
         redis: envConfig.redisConfig.url,
       }),
       inject: [EnvConfig],
     }),
 
     // Rate Limiting (100 requests per minute)
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
 
     // Database Connection
     TypeOrmModule.forRootAsync({
@@ -47,15 +54,12 @@ import { HttpLoggerMiddleware } from './core/middleware/http-logger.middleware';
         const useSSL =
           url && !url.includes('localhost') && !url.includes('127.0.0.1');
 
-        let sslConfig: any = false;
-        if (useSSL) {
-          sslConfig = {
-            rejectUnauthorized: sslRejectUnauthorized,
-          };
-          if (sslCa) {
-            sslConfig.ca = sslCa;
-          }
-        }
+        const sslConfig = useSSL
+          ? {
+              rejectUnauthorized: sslRejectUnauthorized,
+              ...(sslCa && { ca: sslCa }),
+            }
+          : false;
 
         return {
           type: 'postgres',
@@ -63,7 +67,9 @@ import { HttpLoggerMiddleware } from './core/middleware/http-logger.middleware';
           autoLoadEntities: true,
           synchronize: !isProduction, // Auto schema sync only in dev
           ssl: sslConfig,
-          migrations: [__dirname + '/core/config/database/migrations/**/*{.ts,.js}'],
+          migrations: [
+            __dirname + '/core/config/database/migrations/**/*{.ts,.js}',
+          ],
           migrationsRun: isProduction, // Auto-run migrations in production
         };
       },
@@ -92,6 +98,8 @@ import { HttpLoggerMiddleware } from './core/middleware/http-logger.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HttpLoggerMiddleware).forRoutes('*');
+    consumer
+      .apply(TenantContextMiddleware, HttpLoggerMiddleware)
+      .forRoutes('*');
   }
 }

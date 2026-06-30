@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions, DeepPartial, SelectQueryBuilder } from 'typeorm';
+import {
+  Repository,
+  FindManyOptions,
+  DeepPartial,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { ActivityLog } from '../entities/activity-log.entity';
 
 @Injectable()

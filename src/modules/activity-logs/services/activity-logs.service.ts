@@ -15,7 +15,14 @@ export class ActivityLogsService {
     details?: {
       old?: string | number | boolean | Date | object | null;
       new?: string | number | boolean | Date | object | null;
-      [key: string]: string | number | boolean | Date | object | null | undefined;
+      [key: string]:
+        | string
+        | number
+        | boolean
+        | Date
+        | object
+        | null
+        | undefined;
     },
   ): Promise<ActivityLog> {
     const logEntry = this.activityLogsRepository.create({

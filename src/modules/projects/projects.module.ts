@@ -8,11 +8,7 @@ import { ProjectsRepository } from './repositories/projects.repository';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Project]),
-    AuthModule,
-    WorkspacesModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Project]), AuthModule, WorkspacesModule],
   controllers: [ProjectsController],
   providers: [ProjectsService, ProjectsRepository],
   exports: [ProjectsService, ProjectsRepository, TypeOrmModule],

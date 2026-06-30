@@ -35,7 +35,10 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy, 'google') {
       const picture = photos?.[0]?.value || '';
 
       if (!email) {
-        return done(new UnauthorizedException('Email not returned by Google OAuth'), false);
+        return done(
+          new UnauthorizedException('Email not returned by Google OAuth'),
+          false,
+        );
       }
 
       const user = await this.findOrCreateUser(email, displayName, picture, id);
@@ -47,7 +50,8 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy, 'google') {
 
   // Used for manual POST code exchange (if the frontend passes the authorization code directly)
   async authenticateWithCode(code: string): Promise<User> {
-    const { clientId, clientSecret, redirectUri } = this.envConfig.googleOauthConfig;
+    const { clientId, clientSecret, redirectUri } =
+      this.envConfig.googleOauthConfig;
 
     try {
       // 1. Exchange code for access token

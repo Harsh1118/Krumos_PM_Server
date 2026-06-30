@@ -18,9 +18,11 @@ export const mapCommentToResponse = (comment: Comment): CommentResponseDto => ({
   content: comment.content,
   createdAt: comment.createdAt,
   updatedAt: comment.updatedAt,
-  user: comment.user ? {
-    id: comment.user.id,
-    name: comment.user.name,
-    avatarUrl: comment.user.avatarUrl,
-  } : undefined,
+  user: comment.user
+    ? {
+        id: comment.user.id,
+        name: comment.user.name,
+        avatarUrl: comment.user.avatarUrl,
+      }
+    : undefined,
 });

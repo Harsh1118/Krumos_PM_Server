@@ -11,4 +11,3 @@ import { ActivityLogsRepository } from './repositories/activity-logs.repository'
   exports: [ActivityLogsService, ActivityLogsRepository],
 })
 export class ActivityLogsModule {}
-

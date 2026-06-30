@@ -49,11 +49,16 @@ export class EmailService {
             inviteLink,
           }),
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Queue timeout (Redis offline)')), 2000),
+            setTimeout(
+              () => reject(new Error('Queue timeout (Redis offline)')),
+              2000,
+            ),
           ),
         ]);
         enqueued = true;
-        this.logger.log(`Successfully enqueued invitation email for ${to} to Redis`);
+        this.logger.log(
+          `Successfully enqueued invitation email for ${to} to Redis`,
+        );
       } catch (err: any) {
         this.logger.warn(
           `Failed to enqueue invitation email to Redis: ${err.message}. Falling back to direct send.`,
@@ -76,7 +81,6 @@ export class EmailService {
       );
     }
   }
-
 
   async sendInvitationEmailDirect(
     to: string,
@@ -108,12 +112,13 @@ export class EmailService {
 
     if (this.brevoClient) {
       try {
-        const result = await this.brevoClient.transactionalEmails.sendTransacEmail({
-          subject,
-          htmlContent: html,
-          sender: { name: fromName, email: fromEmail },
-          to: [{ email: to }],
-        });
+        const result =
+          await this.brevoClient.transactionalEmails.sendTransacEmail({
+            subject,
+            htmlContent: html,
+            sender: { name: fromName, email: fromEmail },
+            to: [{ email: to }],
+          });
         this.logger.log(
           `Invitation email successfully sent via Brevo to ${to}. ID: ${result.messageId || JSON.stringify(result)}`,
         );

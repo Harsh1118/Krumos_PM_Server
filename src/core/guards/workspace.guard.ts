@@ -7,12 +7,26 @@ import {
 } from '@nestjs/common';
 import { WorkspacesRepository } from '../../modules/workspaces/repositories/workspaces.repository';
 import { WorkspaceMembersRepository } from '../../modules/workspaces/repositories/workspace-members.repository';
+import { TenantContextService } from '../context/tenant-context.service';
+
+import { User } from '../../modules/users/entities/user.entity';
+import { Workspace } from '../../modules/workspaces/entities/workspace.entity';
+import { WorkspaceRole } from '../../modules/workspaces/entities/workspace-member.entity';
+
+export interface GuardRequest {
+  user?: User;
+  params: { slug?: string; [key: string]: any };
+  headers: Record<string, string | string[] | undefined>;
+  workspace?: Workspace;
+  workspaceRole?: WorkspaceRole;
+}
 
 @Injectable()
 export class WorkspaceGuard implements CanActivate {
   constructor(
     private readonly workspacesRepository: WorkspacesRepository,
     private readonly workspaceMembersRepository: WorkspaceMembersRepository,
+    private readonly tenantContextService: TenantContextService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -28,11 +42,10 @@ export class WorkspaceGuard implements CanActivate {
     // However, when the URL contains an explicit :slug param (e.g. /api/workspaces/workspace-b/…),
     // that must always win — otherwise navigating directly to a workspace URL would silently
     // resolve to whichever workspace the client last stored in localStorage.
-    let slug = request.params.slug as string | undefined;
+    let slug = request.params.slug;
     if (!slug) {
       slug = request.headers['x-workspace-slug'] as string;
     }
-
 
     if (!slug) {
       throw new ForbiddenException('Workspace context is missing');
@@ -58,6 +71,8 @@ export class WorkspaceGuard implements CanActivate {
     // Attach workspace and role to the request
     request.workspace = workspace;
     request.workspaceRole = member.role;
+
+    this.tenantContextService.setWorkspaceId(workspace.id);
 
     return true;
   }

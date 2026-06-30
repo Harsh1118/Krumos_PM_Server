@@ -6,7 +6,10 @@ import * as path from 'path';
 config();
 
 const connectionString = process.env.DATABASE_URL;
-const useSSL = connectionString && !connectionString.includes('localhost') && !connectionString.includes('127.0.0.1');
+const useSSL =
+  connectionString &&
+  !connectionString.includes('localhost') &&
+  !connectionString.includes('127.0.0.1');
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',

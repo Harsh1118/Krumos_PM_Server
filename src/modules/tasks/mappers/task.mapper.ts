@@ -35,24 +35,30 @@ export const mapTaskToResponse = (task: Task): TaskResponseDto => ({
   order: task.order,
   createdAt: task.createdAt,
   updatedAt: task.updatedAt,
-  assignee: task.assignee ? {
-    id: task.assignee.id,
-    name: task.assignee.name,
-    avatarUrl: task.assignee.avatarUrl,
-  } : null,
-  reporter: task.reporter ? {
-    id: task.reporter.id,
-    name: task.reporter.name,
-    avatarUrl: task.reporter.avatarUrl,
-  } : undefined,
-  project: task.project ? {
-    id: task.project.id,
-    name: task.project.name,
-    description: task.project.description,
-    workspaceId: task.project.workspaceId,
-    isArchived: task.project.isArchived,
-    createdById: task.project.createdById,
-    createdAt: task.project.createdAt,
-    updatedAt: task.project.updatedAt,
-  } : undefined,
+  assignee: task.assignee
+    ? {
+        id: task.assignee.id,
+        name: task.assignee.name,
+        avatarUrl: task.assignee.avatarUrl,
+      }
+    : null,
+  reporter: task.reporter
+    ? {
+        id: task.reporter.id,
+        name: task.reporter.name,
+        avatarUrl: task.reporter.avatarUrl,
+      }
+    : undefined,
+  project: task.project
+    ? {
+        id: task.project.id,
+        name: task.project.name,
+        description: task.project.description,
+        workspaceId: task.project.workspaceId,
+        isArchived: task.project.isArchived,
+        createdById: task.project.createdById,
+        createdAt: task.project.createdAt,
+        updatedAt: task.project.updatedAt,
+      }
+    : undefined,
 });

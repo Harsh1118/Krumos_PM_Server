@@ -1,5 +1,8 @@
 import { Workspace } from '../entities/workspace.entity';
-import { WorkspaceMember, WorkspaceRole } from '../entities/workspace-member.entity';
+import {
+  WorkspaceMember,
+  WorkspaceRole,
+} from '../entities/workspace-member.entity';
 
 export interface WorkspaceResponseDto {
   id: string;
@@ -14,7 +17,9 @@ export interface WorkspaceWithRoleDto extends WorkspaceResponseDto {
   role: WorkspaceRole;
 }
 
-export const mapWorkspaceToResponse = (workspace: Workspace): WorkspaceResponseDto => ({
+export const mapWorkspaceToResponse = (
+  workspace: Workspace,
+): WorkspaceResponseDto => ({
   id: workspace.id,
   name: workspace.name,
   slug: workspace.slug,
@@ -23,7 +28,9 @@ export const mapWorkspaceToResponse = (workspace: Workspace): WorkspaceResponseD
   updatedAt: workspace.updatedAt,
 });
 
-export const mapWorkspaceMemberToWithRoleDto = (membership: WorkspaceMember): WorkspaceWithRoleDto => ({
+export const mapWorkspaceMemberToWithRoleDto = (
+  membership: WorkspaceMember,
+): WorkspaceWithRoleDto => ({
   id: membership.workspace.id,
   name: membership.workspace.name,
   slug: membership.workspace.slug,

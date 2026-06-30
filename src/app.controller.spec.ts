@@ -16,7 +16,9 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Krumos Backend API is running 🚀!"', () => {
-      expect(appController.getHello()).toBe('Krumos Backend API is running 🚀!');
+      expect(appController.getHello()).toBe(
+        'Krumos Backend API is running 🚀!',
+      );
     });
   });
 });

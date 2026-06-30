@@ -1,5 +1,8 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
-import { Task, TaskPriority } from '../../../modules/tasks/entities/task.entity';
+import {
+  Task,
+  TaskPriority,
+} from '../../../modules/tasks/entities/task.entity';
 import { User } from '../../../modules/users/entities/user.entity';
 import { WorkspaceRole } from '../../../modules/workspaces/entities/workspace-member.entity';
 
@@ -11,27 +14,61 @@ export interface TaskUpdateStrategy {
       priority?: TaskPriority;
       assigneeId?: string | null;
       dueDate?: Date | null;
+      [key: string]: any;
     },
   ): void;
 }
 
 @Injectable()
 export class AdminTaskUpdateStrategy implements TaskUpdateStrategy {
-  validate(task: Task, user: User, data: any): void {
+  validate(
+    _task: Task,
+    _user: User,
+    _data: {
+      priority?: TaskPriority;
+      assigneeId?: string | null;
+      dueDate?: Date | null;
+      [key: string]: any;
+    },
+  ): void {
     // ADMIN can modify all fields; no restrictions.
+    void _task;
+    void _user;
+    void _data;
   }
 }
 
 @Injectable()
 export class ManagerTaskUpdateStrategy implements TaskUpdateStrategy {
-  validate(task: Task, user: User, data: any): void {
+  validate(
+    _task: Task,
+    _user: User,
+    _data: {
+      priority?: TaskPriority;
+      assigneeId?: string | null;
+      dueDate?: Date | null;
+      [key: string]: any;
+    },
+  ): void {
     // MANAGERs can modify all task fields; no restrictions.
+    void _task;
+    void _user;
+    void _data;
   }
 }
 
 @Injectable()
 export class MemberTaskUpdateStrategy implements TaskUpdateStrategy {
-  validate(task: Task, user: User, data: any): void {
+  validate(
+    task: Task,
+    user: User,
+    data: {
+      priority?: TaskPriority;
+      assigneeId?: string | null;
+      dueDate?: Date | null;
+      [key: string]: any;
+    },
+  ): void {
     // MEMBERs can only update tasks assigned to them.
     if (task.assigneeId !== user.id) {
       throw new ForbiddenException(
@@ -39,11 +76,19 @@ export class MemberTaskUpdateStrategy implements TaskUpdateStrategy {
       );
     }
 
-    const isChangingPriority = data.priority !== undefined && data.priority !== task.priority;
-    const isChangingAssignee = data.assigneeId !== undefined && data.assigneeId !== task.assigneeId;
+    const isChangingPriority =
+      data.priority !== undefined && data.priority !== task.priority;
+    const isChangingAssignee =
+      data.assigneeId !== undefined && data.assigneeId !== task.assigneeId;
     const oldDateStr = task.dueDate ? task.dueDate.toISOString() : null;
-    const newDateStr = data.dueDate !== undefined ? (data.dueDate ? new Date(data.dueDate).toISOString() : null) : oldDateStr;
-    const isChangingDueDate = data.dueDate !== undefined && oldDateStr !== newDateStr;
+    const newDateStr =
+      data.dueDate !== undefined
+        ? data.dueDate
+          ? new Date(data.dueDate).toISOString()
+          : null
+        : oldDateStr;
+    const isChangingDueDate =
+      data.dueDate !== undefined && oldDateStr !== newDateStr;
 
     if (isChangingPriority || isChangingAssignee || isChangingDueDate) {
       throw new ForbiddenException(
@@ -70,7 +115,9 @@ export class TaskUpdateStrategySelector {
       case WorkspaceRole.MEMBER:
         return this.memberStrategy;
       default:
-        throw new ForbiddenException(`Unsupported workspace role: ${role}`);
+        throw new ForbiddenException(
+          `Unsupported workspace role: ${role as string}`,
+        );
     }
   }
 }

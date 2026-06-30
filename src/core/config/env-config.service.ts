@@ -7,7 +7,13 @@ dotenv.config();
 
 const envSchema = z.object({
   PORT: z.string().default('5000'),
-  NODE_ENV: z.enum([NodeEnvEnum.LOCAL, NodeEnvEnum.DEV, NodeEnvEnum.STAGING, NodeEnvEnum.PROD]),
+  NODE_ENV: z.enum([
+    NodeEnvEnum.LOCAL,
+    NodeEnvEnum.DEV,
+    NodeEnvEnum.STAGING,
+    NodeEnvEnum.PROD,
+    NodeEnvEnum.TEST,
+  ]),
   DATABASE_URL: z.string(),
   JWT_SECRET: z.string(),
   JWT_EXPIRY: z.string().default('24h'),
@@ -21,6 +27,7 @@ const envSchema = z.object({
   REDIS_URL: z.string().default('redis://localhost:6379'),
   DB_SSL_REJECT_UNAUTHORIZED: z.string().default('true'),
   DB_SSL_CA: z.string().optional(),
+  SOFT_DELETE_RETENTION_DAYS: z.string().default('7'),
 });
 
 type EnvType = z.infer<typeof envSchema>;
@@ -55,7 +62,8 @@ export class EnvConfig {
   }
 
   get dbConfig() {
-    const { DATABASE_URL, DB_SSL_REJECT_UNAUTHORIZED, DB_SSL_CA } = this.envConfig;
+    const { DATABASE_URL, DB_SSL_REJECT_UNAUTHORIZED, DB_SSL_CA } =
+      this.envConfig;
     return {
       url: DATABASE_URL,
       sslRejectUnauthorized: DB_SSL_REJECT_UNAUTHORIZED === 'true',
@@ -72,7 +80,8 @@ export class EnvConfig {
   }
 
   get googleOauthConfig() {
-    const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } = this.envConfig;
+    const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } =
+      this.envConfig;
     return {
       clientId: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
@@ -94,5 +103,9 @@ export class EnvConfig {
     return {
       url: REDIS_URL,
     };
+  }
+
+  get retentionDays(): number {
+    return parseInt(this.envConfig.SOFT_DELETE_RETENTION_DAYS, 10);
   }
 }

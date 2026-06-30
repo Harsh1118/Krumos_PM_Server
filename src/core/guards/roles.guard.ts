@@ -13,7 +13,6 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    
     const requiredRoles = this.reflector.getAllAndOverride<WorkspaceRole[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
@@ -24,7 +23,7 @@ export class RolesGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const userRole = request.workspaceRole as WorkspaceRole;
+    const userRole = request.workspaceRole;
 
     if (!userRole) {
       throw new ForbiddenException(

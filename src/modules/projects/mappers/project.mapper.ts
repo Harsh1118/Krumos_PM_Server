@@ -28,14 +28,18 @@ export const mapProjectToResponse = (project: Project): ProjectResponseDto => ({
   createdById: project.createdById,
   createdAt: project.createdAt,
   updatedAt: project.updatedAt,
-  createdBy: project.createdBy ? {
-    id: project.createdBy.id,
-    name: project.createdBy.name,
-    avatarUrl: project.createdBy.avatarUrl,
-  } : undefined,
+  createdBy: project.createdBy
+    ? {
+        id: project.createdBy.id,
+        name: project.createdBy.name,
+        avatarUrl: project.createdBy.avatarUrl,
+      }
+    : undefined,
 });
 
-export const mapProjectToWithStats = (project: Project): ProjectWithStatsResponseDto => {
+export const mapProjectToWithStats = (
+  project: Project,
+): ProjectWithStatsResponseDto => {
   const activeTasksCount = project.tasks
     ? project.tasks.filter((task) => task.status !== TaskStatus.DONE).length
     : 0;

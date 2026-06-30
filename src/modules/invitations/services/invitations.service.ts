@@ -34,7 +34,6 @@ export class InvitationsService {
     private readonly dataSource: DataSource,
   ) {}
 
-
   async invite(
     workspace: Workspace,
     invitedBy: User,
@@ -136,7 +135,7 @@ export class InvitationsService {
       relations: { workspace: true, invitedBy: true },
     });
 
-    if (!invite) {
+    if (!invite || !invite.workspace) {
       throw new NotFoundException('Invitation not found');
     }
 

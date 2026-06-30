@@ -17,7 +17,9 @@ export interface ActivityLogResponseDto {
   createdAt: Date;
 }
 
-export const mapActivityLogToResponse = (log: ActivityLog): ActivityLogResponseDto => ({
+export const mapActivityLogToResponse = (
+  log: ActivityLog,
+): ActivityLogResponseDto => ({
   id: log.id,
   user: {
     id: log.user.id,

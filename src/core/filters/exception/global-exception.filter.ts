@@ -32,7 +32,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       if (typeof res === 'object' && res !== null) {
         userMessage = (res as Record<string, unknown>).message ?? res;
       } else {
-        userMessage = res as string;
+        userMessage = res;
       }
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -43,11 +43,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // Structured internal logging — full stack trace for 5xx, warn for 4xx
     const logContext = `${request.method} ${request.path}`;
     if (status >= 500) {
-      const stack = exception instanceof Error ? exception.stack : String(exception);
+      const stack =
+        exception instanceof Error ? exception.stack : String(exception);
       this.logger.error(`[${status}] ${logContext} → ${stack}`);
     } else if (status >= 400 && status !== 404) {
       // Log 4xx (except 404s which are too noisy) as warnings
-      const msg = exception instanceof Error ? exception.message : String(exception);
+      const msg =
+        exception instanceof Error ? exception.message : String(exception);
       this.logger.warn(`[${status}] ${logContext} → ${msg}`);
     }
 

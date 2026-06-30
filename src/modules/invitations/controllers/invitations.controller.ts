@@ -25,7 +25,10 @@ import { WorkspaceRole } from '../../workspaces/entities/workspace-member.entity
 import { AcceptInvitationDto } from '../data/requests/accept-invitation.dto';
 import { CreateInvitationDto } from '../data/requests/create-invitation.dto';
 import { UpdateMemberRoleDto } from '../data/requests/update-member-role.dto';
-import { mapInvitationToResponse, mapInvitationToVerifyResponse } from '../mappers/invitation.mapper';
+import {
+  mapInvitationToResponse,
+  mapInvitationToVerifyResponse,
+} from '../mappers/invitation.mapper';
 
 @Controller()
 export class InvitationsController {
@@ -47,7 +50,10 @@ export class InvitationsController {
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('invitations/accept')
   @UseGuards(JwtAuthGuard)
-  async accept(@CurrentUser() user: User, @Body() acceptInvitationDto: AcceptInvitationDto) {
+  async accept(
+    @CurrentUser() user: User,
+    @Body() acceptInvitationDto: AcceptInvitationDto,
+  ) {
     return this.invitationsService.accept(acceptInvitationDto.token, user);
   }
 
@@ -74,7 +80,9 @@ export class InvitationsController {
   @UseGuards(JwtAuthGuard, WorkspaceGuard, RolesGuard)
   @Roles(WorkspaceRole.ADMIN)
   async getPending(@CurrentWorkspace() workspace: Workspace) {
-    const invitations = await this.invitationsService.getPendingInvitations(workspace.id);
+    const invitations = await this.invitationsService.getPendingInvitations(
+      workspace.id,
+    );
     return invitations.map(mapInvitationToResponse);
   }
 

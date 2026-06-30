@@ -23,7 +23,10 @@ async function bootstrap() {
     app.useWebSocketAdapter(redisIoAdapter);
     logger.log('WebSocket Redis adapter configured successfully');
   } catch (err) {
-    logger.error('Failed to configure WebSocket Redis adapter', (err as Error).stack);
+    logger.error(
+      'Failed to configure WebSocket Redis adapter',
+      (err as Error).stack,
+    );
   }
 
   // Enable CORS with restricted origin whitelisting
@@ -57,4 +60,4 @@ async function bootstrap() {
   await app.listen(port);
   logger.log(`Krumos PM Backend running on: http://localhost:${port}/api`);
 }
-bootstrap();
+void bootstrap();

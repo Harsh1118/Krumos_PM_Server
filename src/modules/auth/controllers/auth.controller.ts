@@ -24,12 +24,15 @@ import { User } from '../../users/entities/user.entity';
 // Each entry maps a random code → { accessToken, refreshToken, user } and
 // expires after TOKEN_EXCHANGE_TTL_MS to prevent stale codes accumulating.
 const TOKEN_EXCHANGE_TTL_MS = 60_000; // 60 seconds
-const pendingOAuthTokens = new Map<string, {
-  accessToken: string;
-  refreshToken: string;
-  user: User;
-  expiresAt: number;
-}>();
+const pendingOAuthTokens = new Map<
+  string,
+  {
+    accessToken: string;
+    refreshToken: string;
+    user: User;
+    expiresAt: number;
+  }
+>();
 
 @Controller('auth')
 export class AuthController {
@@ -59,7 +62,8 @@ export class AuthController {
   async googleCallbackGet(@Req() req: any, @Res() res: express.Response) {
     try {
       const user = req.user;
-      const { accessToken, refreshToken } = await this.authService.generateTokens(user);
+      const { accessToken, refreshToken } =
+        await this.authService.generateTokens(user);
 
       // Store the tokens behind a short-lived one-time state code.
       // The raw access token is NEVER placed in the redirect URL to prevent
@@ -99,7 +103,9 @@ export class AuthController {
     // Enforce expiry before consuming the code
     if (Date.now() > pending.expiresAt) {
       pendingOAuthTokens.delete(code);
-      throw new UnauthorizedException('Authorization code has expired. Please sign in again.');
+      throw new UnauthorizedException(
+        'Authorization code has expired. Please sign in again.',
+      );
     }
 
     // Consume the code immediately — one-time use only
@@ -137,8 +143,11 @@ export class AuthController {
     }
 
     try {
-      const { accessToken, refreshToken: newRefreshToken, user } =
-        await this.authService.refreshTokens(refreshToken);
+      const {
+        accessToken,
+        refreshToken: newRefreshToken,
+        user,
+      } = await this.authService.refreshTokens(refreshToken);
 
       this.setRefreshTokenCookie(res, newRefreshToken);
 

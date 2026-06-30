@@ -1,16 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOneOptions, FindManyOptions, DeepPartial } from 'typeorm';
+import {
+  Repository,
+  FindOneOptions,
+  FindManyOptions,
+  DeepPartial,
+} from 'typeorm';
 import { Invitation } from '../entities/invitation.entity';
+import { TenantContextService } from '../../../core/context/tenant-context.service';
+import { applyTenantFilter } from '../../../core/context/tenant-filter.helper';
 
 @Injectable()
 export class InvitationsRepository {
   constructor(
     @InjectRepository(Invitation)
     private readonly repository: Repository<Invitation>,
+    private readonly tenantContextService: TenantContextService,
   ) {}
 
-  async findOne(options: FindOneOptions<Invitation>): Promise<Invitation | null> {
+  async findOne(
+    options: FindOneOptions<Invitation>,
+  ): Promise<Invitation | null> {
+    applyTenantFilter(options, this.tenantContextService.getWorkspaceId());
     return this.repository.findOne(options);
   }
 
@@ -23,6 +34,7 @@ export class InvitationsRepository {
   }
 
   async find(options: FindManyOptions<Invitation>): Promise<Invitation[]> {
+    applyTenantFilter(options, this.tenantContextService.getWorkspaceId());
     return this.repository.find(options);
   }
 }

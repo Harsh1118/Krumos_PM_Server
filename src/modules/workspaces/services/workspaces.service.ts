@@ -62,14 +62,14 @@ export class WorkspacesService {
     });
   }
 
-
   async findAllForUser(userId: string) {
     const memberships = await this.workspaceMemberRepository.find({
       where: { userId },
       relations: { workspace: true },
     });
 
-    return memberships.map(mapWorkspaceMemberToWithRoleDto);
+    const activeMemberships = memberships.filter((m) => m.workspace !== null);
+    return activeMemberships.map(mapWorkspaceMemberToWithRoleDto);
   }
 
   async update(
@@ -108,6 +108,7 @@ export class WorkspacesService {
       throw new NotFoundException(`Workspace "${slug}" not found`);
     }
 
+    // Utilize softRemove which triggers the PostgreSQL cascade triggers automatically
     await this.workspaceRepository.softRemove(workspace);
   }
 }

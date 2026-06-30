@@ -1,7 +1,5 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { Task, TaskStatus, TaskPriority } from '../entities/task.entity';
 import { WorkspaceRole } from '../../workspaces/entities/workspace-member.entity';
 import { ActivityLogsService } from '../../activity-logs/services/activity-logs.service';
@@ -21,6 +19,7 @@ export class TasksService {
     private readonly notificationsService: NotificationsService,
     private readonly eventsGateway: EventsGateway,
     private readonly taskUpdateStrategySelector: TaskUpdateStrategySelector,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(
@@ -225,8 +224,10 @@ export class TasksService {
     const strategy = this.taskUpdateStrategySelector.getStrategy(userRole);
     strategy.validate(task, user, data);
 
-    const oldValues: Record<string, string | number | boolean | Date | null> = {};
-    const newValues: Record<string, string | number | boolean | Date | null> = {};
+    const oldValues: Record<string, string | number | boolean | Date | null> =
+      {};
+    const newValues: Record<string, string | number | boolean | Date | null> =
+      {};
     let isChanged = false;
 
     // Detect and record mutations for Activity Logs
@@ -330,18 +331,24 @@ export class TasksService {
 
         let needsRebalance = false;
         for (let i = 0; i < tasksInColumn.length - 1; i++) {
-          if (Math.abs(tasksInColumn[i].order - tasksInColumn[i + 1].order) < 1e-9) {
+          if (
+            Math.abs(tasksInColumn[i].order - tasksInColumn[i + 1].order) < 1e-9
+          ) {
             needsRebalance = true;
             break;
           }
         }
 
         if (needsRebalance) {
-          for (let i = 0; i < tasksInColumn.length; i++) {
-            tasksInColumn[i].order = i + 1.0;
-            await this.taskRepository.save(tasksInColumn[i]);
-          }
-          savedTask = (await this.taskRepository.findOne({ where: { id: task.id } })) || task;
+          await this.dataSource.transaction(async (manager) => {
+            for (let i = 0; i < tasksInColumn.length; i++) {
+              tasksInColumn[i].order = i + 1.0;
+            }
+            await manager.save(Task, tasksInColumn);
+          });
+          savedTask =
+            (await this.taskRepository.findOne({ where: { id: task.id } })) ||
+            task;
         }
       }
     }

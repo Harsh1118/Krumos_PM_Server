@@ -34,7 +34,11 @@ export class WorkspacesController {
     @CurrentUser() user: User,
     @Body() createWorkspaceDto: CreateWorkspaceDto,
   ) {
-    return this.workspacesService.create(user.id, createWorkspaceDto.name, createWorkspaceDto.slug);
+    return this.workspacesService.create(
+      user.id,
+      createWorkspaceDto.name,
+      createWorkspaceDto.slug,
+    );
   }
 
   @Get()
@@ -49,7 +53,11 @@ export class WorkspacesController {
     @Param('slug') slug: string,
     @Body() updateWorkspaceDto: UpdateWorkspaceDto,
   ) {
-    return this.workspacesService.update(slug, updateWorkspaceDto.name, updateWorkspaceDto.logoUrl);
+    return this.workspacesService.update(
+      slug,
+      updateWorkspaceDto.name,
+      updateWorkspaceDto.logoUrl,
+    );
   }
 
   @Delete(':slug')

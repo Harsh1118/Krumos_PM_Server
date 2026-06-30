@@ -13,6 +13,15 @@ export interface JwtUserPayload {
   avatarUrl: string;
 }
 
+export interface JwtPayload {
+  sub: string;
+  email: string;
+  name: string;
+  avatarUrl: string;
+  iat: number;
+  exp: number;
+}
+
 @Injectable()
 export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
@@ -27,10 +36,16 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: any): Promise<JwtUserPayload> {
-    const user = await this.userRepository.findOne({ where: { id: payload.sub } });
+  async validate(payload: JwtPayload): Promise<JwtUserPayload> {
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+    });
     if (!user) {
       throw new UnauthorizedException('User no longer exists in database');
+    }
+
+    if (user.loggedOut && payload.iat * 1000 < user.loggedOut.getTime()) {
+      throw new UnauthorizedException('Token has been revoked due to logout');
     }
 
     return {
