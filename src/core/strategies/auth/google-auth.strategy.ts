@@ -136,6 +136,7 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy, 'google') {
         updated = true;
       }
       user.loginAt = now;
+      user.loggedOut = null;
       updated = true;
 
       if (updated) {

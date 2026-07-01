@@ -44,8 +44,11 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException('User no longer exists in database');
     }
 
-    if (user.loggedOut && payload.iat * 1000 < user.loggedOut.getTime()) {
-      throw new UnauthorizedException('Token has been revoked due to logout');
+    if (user.loggedOut) {
+      const loggedOutTime = new Date(user.loggedOut).getTime();
+      if (payload.iat * 1000 < loggedOutTime) {
+        throw new UnauthorizedException('Token has been revoked due to logout');
+      }
     }
 
     return {
