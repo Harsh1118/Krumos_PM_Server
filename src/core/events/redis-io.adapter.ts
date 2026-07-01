@@ -12,7 +12,17 @@ export class RedisIoAdapter extends IoAdapter {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
     this.logger.log(`Connecting Socket.io Redis Adapter to: ${redisUrl}`);
 
-    const pubClient = createClient({ url: redisUrl });
+    const pubClient = createClient({
+      url: redisUrl,
+      socket: {
+        reconnectStrategy(retries) {
+          if (retries > 3) {
+            return new Error('Redis connection failed');
+          }
+          return Math.min(retries * 500, 2000);
+        },
+      },
+    });
     const subClient = pubClient.duplicate();
 
     await Promise.all([pubClient.connect(), subClient.connect()]);
