@@ -6,7 +6,7 @@ import { z } from 'zod';
 dotenv.config();
 
 const envSchema = z.object({
-  PORT: z.string().default('5000'),
+  PORT: z.string().trim().default('5000'),
   NODE_ENV: z.enum([
     NodeEnvEnum.LOCAL,
     NodeEnvEnum.DEV,
@@ -14,20 +14,20 @@ const envSchema = z.object({
     NodeEnvEnum.PROD,
     NodeEnvEnum.TEST,
   ]),
-  DATABASE_URL: z.string(),
-  JWT_SECRET: z.string(),
-  JWT_EXPIRY: z.string().default('24h'),
-  GOOGLE_CLIENT_ID: z.string(),
-  GOOGLE_CLIENT_SECRET: z.string(),
-  GOOGLE_REDIRECT_URI: z.string(),
-  FRONTEND_URL: z.string(),
-  BREVO_API_KEY: z.string(),
-  BREVO_FROM_EMAIL: z.string().email(),
-  BREVO_FROM_NAME: z.string().default('Krumos'),
-  REDIS_URL: z.string().default('redis://localhost:6379'),
-  DB_SSL_REJECT_UNAUTHORIZED: z.string().default('true'),
-  DB_SSL_CA: z.string().optional(),
-  SOFT_DELETE_RETENTION_DAYS: z.string().default('7'),
+  DATABASE_URL: z.string().trim(),
+  JWT_SECRET: z.string().trim(),
+  JWT_EXPIRY: z.string().trim().default('24h'),
+  GOOGLE_CLIENT_ID: z.string().trim(),
+  GOOGLE_CLIENT_SECRET: z.string().trim(),
+  GOOGLE_REDIRECT_URI: z.string().trim(),
+  FRONTEND_URL: z.string().trim(),
+  BREVO_API_KEY: z.string().trim(),
+  BREVO_FROM_EMAIL: z.string().trim().email(),
+  BREVO_FROM_NAME: z.string().trim().default('Krumos'),
+  REDIS_URL: z.string().trim().default('redis://localhost:6379'),
+  DB_SSL_REJECT_UNAUTHORIZED: z.string().trim().default('true'),
+  DB_SSL_CA: z.string().trim().optional(),
+  SOFT_DELETE_RETENTION_DAYS: z.string().trim().default('7'),
 });
 
 type EnvType = z.infer<typeof envSchema>;
