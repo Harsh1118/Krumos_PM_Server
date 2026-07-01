@@ -1,0 +1,56 @@
+services:
+  - type: web
+    name: krumos-backend
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: singapore # You can change this to your preferred region (e.g., oregon, frankfurt, ohio, singapore)
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      
+      # Database connection (Neon PostgreSQL)
+      - key: DATABASE_URL
+        sync: false # Render will prompt you to enter this value during deployment
+      
+      # Redis Connection (Linked automatically from the redis service below)
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: krumos-redis
+          property: connectionString
+
+      # Security & JWT Configuration
+      - key: JWT_SECRET
+        generateValue: true # Render will automatically generate a secure random secret key
+      - key: JWT_EXPIRY
+        value: 24h
+
+      # Frontend & OAuth Configurations (Render will prompt you for these)
+      - key: FRONTEND_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+
+      # Email Configuration (Brevo)
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_FROM_EMAIL
+        sync: false
+      - key: BREVO_FROM_NAME
+        value: Krumos
+
+      # Application Config
+      - key: SOFT_DELETE_RETENTION_DAYS
+        value: "7"
+
+  - type: redis
+    name: krumos-redis
+    plan: free
+    ipAllowList: [] # Restricts access to internal services only for security
